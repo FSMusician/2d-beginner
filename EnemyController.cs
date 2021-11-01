@@ -11,12 +11,16 @@ public class EnemyController : MonoBehaviour
     Rigidbody2D rigidbody2D;
     float timer;
     int direction = 1;
+    bool broken = true;
 
     // Start is called before the first frame update
+    Animator animator;
+
     void Start()
     {
         rigidbody2D = GetComponent<Rigidbody2D>();
         timer = changeTime;
+        animator = GetComponent<Animator>();
     }
 
     void FixedUpdate()
@@ -25,11 +29,20 @@ public class EnemyController : MonoBehaviour
 
         if (vertical)
         {
-            position.x = position.x + Time.deltaTime * speed;
+            position.y = position.y + Time.deltaTime * speed * direction;
+            animator.SetFloat("Move X", 0);
+            animator.SetFloat("Move Y", direction);
         }
         else
         {
-            position.x = position.x + Time.deltaTime * speed;
+            position.x = position.x + Time.deltaTime * speed * direction;
+            animator.SetFloat("Move X", direction);
+            animator.SetFloat("Move Y", 0);
+
+            if (!broken)
+            {
+                return;
+            }
         }
 
         rigidbody2D.MovePosition(position);
@@ -44,6 +57,12 @@ public class EnemyController : MonoBehaviour
             direction = -direction;
             timer = changeTime;
         }
+
+        //remember ! inverse the test, so if broken is true !broken will be false and return won’t be executed.
+        if (!broken)
+        {
+            return;
+        }
     }
     void OnCollisionEnter2D(Collision2D other)
     {
@@ -53,5 +72,11 @@ public class EnemyController : MonoBehaviour
         {
             player.ChangeHealth(-1);
         }
+    }
+
+    public void Fix()
+    {
+        broken = false;
+        rigidbody2D.simulated = false;
     }
 }
